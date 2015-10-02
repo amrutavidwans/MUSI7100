@@ -3,6 +3,7 @@ fclose all;
 clear all;
 clc;
 
+tic
 %%% Extract Pitch Contour using Melodia of the wav files in folder
 %%% .\Audios_16kHz and save them as .csv files in the same folder
 % ExtractPitchUsingMelodia
@@ -12,20 +13,21 @@ clc;
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-path='.\Audios_16kHz\';
+oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+% path='.\Audios_16kHz\';
 file='Way Back Into Love.lrc';
 [~,filename,~]=fileparts(file);
-[Time_final,OffsetSec,Lyrics]= ReadLrc(path,file);
+[Time_final,OffsetSec,Lyrics]= ReadLrc(oldpath,file);
 
 TimeLyrics=Time_final-(ones(1,length(Time_final))*OffsetSec);
 % find the locations of silences in the Lrc
 emptyCells = cellfun(@isempty,Lyrics);
 Idx=find(emptyCells==1);
 
-load([path filename '.mat']);
+load([oldpath filename '.mat']);
 
 % using melodia SVD output:
-PitchMelodia=load([path filename '_vamp_mtg-melodia_melodia_melody.csv']);
+PitchMelodia=load([oldpath filename '_vamp_mtg-melodia_melodia_melody.csv']);
 PitchMelodia(PitchMelodia(:,2)<0,2)=0;
 
 % TotalLines=length(Lyrics)-length(Idx);
@@ -35,7 +37,7 @@ Nz_MP_vals=find(PitchMelodia(:,2)~=0);
 StartLyrics=PitchMelodia(Nz_MP_vals(1),1);
 EndLyrics=PitchMelodia(Nz_MP_vals(end),1);
 
-ApproxLocIntrvl=(EndLyrics-StartLyrics)/TotalLines;
+ApproxLocIntrvl=(EndLyrics-StartLyrics)/(TotalLines-1);
 ApproxLocs=StartLyrics:ApproxLocIntrvl:EndLyrics;
 
 for iter=1:length(ApproxLocs)
@@ -76,4 +78,11 @@ hold on;
 for itr=1:length(Idx)
     hold on; line([TimeLyrics(Idx(itr)) TimeLyrics(Idx(itr))],y1, 'LineWidth',2,'Color','m');
 end
+
+% error calculation
+thresh=0.5;
+[prec, rec]= PrecRec(TimeLyrics, LyricsApproxTiming, thresh);
+fmeasure=(2*prec*rec)/(prec+rec)
+
+toc
 % using low level features:

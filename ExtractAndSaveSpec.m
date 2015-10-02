@@ -2,20 +2,21 @@ clear all;
 close all;
 clc;
 
-path='.\Audios_16kHz\';
+oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+% path='.\Audios_16kHz\';
 
-fnames = dir([path '*.wav']);
+fnames = dir([oldpath '*.wav']);
 numfids = length(fnames);
 
 
 for iter=1:numfids
     wavFile=fnames(iter).name;
     display(wavFile);
-    [~,wavName,~]=fileparts([path wavFile]);
-    [fwavVals,fs] = wavread([path wavFile]);
+    [~,wavName,~]=fileparts([oldpath wavFile]);
+    [fwavVals,fs] = wavread([oldpath wavFile]);
     window=0.04; noverlap=0.75; nfft=(window*fs*noverlap*5);
     [SpecVals,yFreq,xTime]=spectrogram(fwavVals,(window*fs),(window*fs*noverlap),nfft,fs);
-    save([path wavName '.mat'],'wavFile','fwavVals','window','noverlap','nfft','SpecVals','yFreq','xTime','fs');
+    save([oldpath wavName '.mat'],'wavFile','fwavVals','window','noverlap','nfft','SpecVals','yFreq','xTime','fs');
     clear 'wavName' 'fwavVals' 'window' 'noverlap' 'nfft' 'SpecVals' 'yFreq' 'xTime' 'fs';
 end
 

@@ -2,18 +2,19 @@ clear all;
 close all;
 clc;
 
-path='.\Audios_16kHz\';
+oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+% path='.\Audios_16kHz\';
 
-fnames = dir([path '*.mat']);
+fnames = dir([oldpath '*.mat']);
 numfids = length(fnames);
 
 
 for iter=1:numfids
     
-    load([path fnames(iter).name]);
+    load([oldpath fnames(iter).name]);
     display(wavFile);
-    [~,wavName,~]=fileparts([path wavFile]);
-    FileName_Pitch=[path wavName '_vamp_mtg-melodia_melodia_melody.csv'];
+    [~,wavName,~]=fileparts([oldpath wavFile]);
+    FileName_Pitch=[oldpath wavName '_vamp_mtg-melodia_melodia_melody.csv'];
     PitchMelodia = load(FileName_Pitch,'r');  
     PitchMelodia(PitchMelodia(:,2)<0,2)=0;
     
