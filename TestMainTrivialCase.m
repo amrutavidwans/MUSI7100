@@ -19,7 +19,7 @@ file='Way Back Into Love.lrc';
 [~,filename,~]=fileparts(file);
 [Time_final,OffsetSec,Lyrics]= ReadLrc(oldpath,file);
 
-TimeLyrics=Time_final-(ones(1,length(Time_final))*OffsetSec);
+TimeLyrics=Time_final+(ones(1,length(Time_final))*OffsetSec);
 % find the locations of silences in the Lrc
 emptyCells = cellfun(@isempty,Lyrics);
 Idx=find(emptyCells==1);
@@ -83,14 +83,14 @@ end
 % error calculation
 thresh=0.5;
 [prec, rec]= PrecRec(TimeLyrics, LyricsApproxTiming, thresh);
-fmeasure=(2*prec*rec)/(prec+rec)
+fmeasure=(2*prec*rec)/(prec+rec);
 
 idx_lbl=label_segments(LyricsApproxTiming,PitchMelodia(:,1));
 gt_lbl=label_segments(TimeLyrics,PitchMelodia(:,1));
 [r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl);
 
 %display outputs
-display('prec','rec','acp','asp');
+display(fmeasure);display(acp);display(asp);
 
 toc
 % using low level features:

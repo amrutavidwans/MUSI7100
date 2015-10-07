@@ -13,7 +13,7 @@ tic
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
 % path='.\Audios_16kHz\';
 file='Way Back Into Love.lrc';
 [~,filename,~]=fileparts(file);
@@ -85,9 +85,12 @@ thresh=0.5;
 [prec, rec]= PrecRec(TimeLyrics, LyricsApproxTiming, thresh);
 fmeasure=(2*prec*rec)/(prec+rec)
 
-idx_lbl=label_segments(bndry,length(PitchMelodia(:,1)));
-gt_lbl=label_segments(bndry,length(PitchMelodia(:,1)));
-[r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl)
+idx_lbl=label_segments(LyricsApproxTiming,PitchMelodia(:,1));
+gt_lbl=label_segments(TimeLyrics,PitchMelodia(:,1));
+[r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl);
+
+%display outputs
+display(fmeasure) display(acp','asp');
 
 toc
 % using low level features:

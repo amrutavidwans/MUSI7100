@@ -19,7 +19,7 @@ file='Way Back Into Love.lrc';
 [~,filename,~]=fileparts(file);
 [Time_final,OffsetSec,Lyrics]= ReadLrc(oldpath,file);
 
-TimeLyrics=Time_final-(ones(1,length(Time_final))*OffsetSec);
+TimeLyrics=Time_final+(ones(1,length(Time_final))*OffsetSec);
 % find the locations of silences in the Lrc
 emptyCells = cellfun(@isempty,Lyrics);
 Idx=find(emptyCells==1);
@@ -27,7 +27,8 @@ Idx=find(emptyCells==1);
 load([oldpath filename '.mat']);
 
 % using melodia SVD output:
-PitchMelodia=load([oldpath filename '_vamp_mtg-melodia_melodia_melody.csv']);
+MelodiaFile=[oldpath filename '_vamp_mtg-melodia_melodia_melody.csv'];
+PitchMelodia=load(MelodiaFile);
 PitchMelodia(PitchMelodia(:,2)<0,2)=0;
 
 % TotalLines=length(Lyrics)-length(Idx);
@@ -37,13 +38,18 @@ Nz_MP_vals=find(PitchMelodia(:,2)~=0);
 StartLyrics=PitchMelodia(Nz_MP_vals(1),1);
 EndLyrics=PitchMelodia(Nz_MP_vals(end),1);
 
-ApproxLocIntrvl=(EndLyrics-StartLyrics)/(TotalLines-1);
-ApproxLocs=StartLyrics:ApproxLocIntrvl:EndLyrics;
+% ApproxLocIntrvl=(EndLyrics-StartLyrics)/(TotalLines-1);
+% ApproxLocs=StartLyrics:ApproxLocIntrvl:EndLyrics;
+% 
+% for iter=1:length(ApproxLocs)
+%     [~,chk_loc]=min(abs(PitchMelodia(Nz_MP_vals,1)-ApproxLocs(iter)));
+%     LyricsApproxTiming(iter)=PitchMelodia(Nz_MP_vals(chk_loc),1);
+% end
 
-for iter=1:length(ApproxLocs)
-    [~,chk_loc]=min(abs(PitchMelodia(Nz_MP_vals,1)-ApproxLocs(iter)));
-    LyricsApproxTiming(iter)=PitchMelodia(Nz_MP_vals(chk_loc),1);
-end
+[PM_ds]=MelodiaDownSample(MelodiaFile);
+[sim_mat,nov_score]=SDM_nov(5,'Euclidean',PM_ds);
+figure;
+imagesc(PM_ds(:,1),PM_ds(:,1),sim_mat); hold on; plot(PM_ds(:,1),nov_score);
 
 % plot spectrogram, original lyrics and estimated lyrics
 figure; title(filename);
@@ -82,7 +88,15 @@ end
 % error calculation
 thresh=0.5;
 [prec, rec]= PrecRec(TimeLyrics, LyricsApproxTiming, thresh);
-fmeasure=(2*prec*rec)/(prec+rec)
+fmeasure=(2*prec*rec)/(prec+rec);
+
+
+idx_lbl=label_segments(LyricsApproxTiming,PitchMelodia(:,1));
+gt_lbl=label_segments(TimeLyrics,PitchMelodia(:,1));
+[r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl);
+
+%display outputs
+display(fmeasure);display(acp);display(asp);
 
 toc
 % using low level features:
