@@ -13,9 +13,18 @@ clear all;
 
 % command='sonic-annotator.exe -d vamp:mtg-melodia:melodia:melody -r "E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz" -w csv';
 % status = system(command);
+% oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+% path='.\Audios_16kHz\';
+path='C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\';
 
-path='"E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz"';
-command=['sonic-annotator.exe -d vamp:mtg-melodia:melodia:melody -r ' path ' -w csv'];
-status = system(command);
+fnames = dir([path '*.wav']);
+numfids = length(fnames);
 
+
+for iter=1:numfids
+    wavFile=fnames(iter).name;
+    display(wavFile);
+    command=['sonic-annotator.exe -d vamp:mtg-melodia:melodia:melody -r "' path wavFile '" -w csv'];
+    status = system(command);
+end
 %sonic-annotator.exe -d vamp:mtg-melodia:melodia:melody "E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Coldplay - Paradise_16k.wav" -w csv

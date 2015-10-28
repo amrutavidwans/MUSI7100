@@ -13,9 +13,9 @@ tic
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
 % path='.\Audios_16kHz\';
-file='Way Back Into Love.lrc';
+file='Christina Perri - A Thousand Years.lrc';
 [~,filename,~]=fileparts(file);
 [Time_final,OffsetSec,Lyrics]= ReadLrc(oldpath,file);
 
@@ -31,6 +31,17 @@ MelodiaFile=[oldpath filename '_vamp_mtg-melodia_melodia_melody.csv'];
 PitchMelodia=load(MelodiaFile);
 PitchMelodia(PitchMelodia(:,2)<0,2)=0;
 
+SmoothPitchMelodia=PitchMelodia;
+windowSmooth=15;
+ForCentr=floor(windowSmooth/2);
+% smoothing of melody 
+for i=ForCentr+1:length(PitchMelodia(:,2))-ForCentr
+    temp=PitchMelodia(i-ForCentr:i+ForCentr,2);
+    if all(temp)~=0 || sum(temp==0)>round(length(temp))*0.5;
+        SmoothPitchMelodia(i,2)=median(temp);
+    end
+end
+
 % TotalLines=length(Lyrics)-length(Idx);
 TotalLines=length(Lyrics);
 
@@ -38,18 +49,43 @@ Nz_MP_vals=find(PitchMelodia(:,2)~=0);
 StartLyrics=PitchMelodia(Nz_MP_vals(1),1);
 EndLyrics=PitchMelodia(Nz_MP_vals(end),1);
 
-% ApproxLocIntrvl=(EndLyrics-StartLyrics)/(TotalLines-1);
-% ApproxLocs=StartLyrics:ApproxLocIntrvl:EndLyrics;
-% 
-% for iter=1:length(ApproxLocs)
-%     [~,chk_loc]=min(abs(PitchMelodia(Nz_MP_vals,1)-ApproxLocs(iter)));
-%     LyricsApproxTiming(iter)=PitchMelodia(Nz_MP_vals(chk_loc),1);
-% end
-
 [PM_ds]=MelodiaDownSample(MelodiaFile);
-[sim_mat,nov_score]=SDM_nov(5,'Euclidean',PM_ds);
+
+Nz_PM_ds=find(PM_ds(:,2)~=0);
+NzPitchMelodia(:,1)=PM_ds(Nz_PM_ds,1);
+NzPitchMelodia(:,2)=PM_ds(Nz_PM_ds,2);
+
+
+NzPitchMelodiaCents=69+12*log2(NzPitchMelodia(:,2)/440);
+plot(NzPitchMelodia(:,1),NzPitchMelodiaCents);
+
+[sim_mat,nov_score]=SDM_nov(5,'Euclidean',NzPitchMelodiaCents);
+
+
+Nz_nov_score=zeros(length(PM_ds),1);
+Nz_nov_score(Nz_PM_ds)=nov_score;
+
 figure;
-imagesc(PM_ds(:,1),PM_ds(:,1),sim_mat); hold on; plot(PM_ds(:,1),nov_score);
+imagesc(NzPitchMelodia(:,1),NzPitchMelodia(:,1),sim_mat); colormap gray; axis xy; axis square;
+figure;
+plot(NzPitchMelodia(:,1),nov_score); axis square;
+
+figure;
+subplot(211);imagesc(NzPitchMelodia(:,1),NzPitchMelodia(:,1),sim_mat);
+subplot(212); plot(PM_ds(:,1),Nz_nov_score); 
+
+figure;imagesc(1-(sim_mat/max(max(sim_mat)).^2));
+
+% MFCCs
+% hop=0.01; % hop in s
+% frm=0.04; % frm in s
+% AudioFileName=[oldpath filename '.wav'];
+% AudioFile=audioread(AudioFileName);
+% addpath('.\MFCC');
+% coeff=melfcc(AudioFile,fs, 'maxfreq', 8000, 'numcep', 13, 'nbands', 40, 'fbtype', 'fcmel', 'dcttype', 1, 'usecmp', 1, 'wintime',frm, 'hoptime', hop, 'preemph', 0, 'dither', 1);
+% [sim_mat_coeff,nov_score_coeff]=SDM_nov(5,'Euclidean',coeff');
+% figure;
+% imagesc(PM_ds(:,1),PM_ds(:,1),sim_mat_coeff); %colormap gray;
 
 % plot spectrogram, original lyrics and estimated lyrics
 figure; title(filename);
@@ -100,3 +136,12 @@ display(fmeasure);display(acp);display(asp);
 
 toc
 % using low level features:
+
+
+% ApproxLocIntrvl=(EndLyrics-StartLyrics)/(TotalLines-1);
+% ApproxLocs=StartLyrics:ApproxLocIntrvl:EndLyrics;
+% 
+% for iter=1:length(ApproxLocs)
+%     [~,chk_loc]=min(abs(PitchMelodia(Nz_MP_vals,1)-ApproxLocs(iter)));
+%     LyricsApproxTiming(iter)=PitchMelodia(Nz_MP_vals(chk_loc),1);
+% end

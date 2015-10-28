@@ -5,15 +5,15 @@
 % clear all;
 % close all;
 
-function [new_tpfile]=MelodiaDownSample(FileName)
+function [new_tpfile]=MelodiaDownSample(FileName,reqd_dur)
 
 tpefile=load(FileName);
 
 prev_dur=0.002875;
-reqd_dur=0.01;
+% reqd_dur=0.01;
 len=length(tpefile);
 
-time=0.00:0.01:roundn(tpefile(len,1),-2);
+time=0.00:reqd_dur:roundn(tpefile(len,1),-2);
 new_tpfile=zeros(length(time),2);
 new_tpfile(:,1)=time;
 
