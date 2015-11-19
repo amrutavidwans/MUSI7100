@@ -15,7 +15,7 @@ clear all;
 % status = system(command);
 % oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
 % path='.\Audios_16kHz\';
-path='C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\';
+path='/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/';
 
 fnames = dir([path '*.wav']);
 numfids = length(fnames);

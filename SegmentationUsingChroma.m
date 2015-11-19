@@ -13,7 +13,7 @@ tic
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 file='Christina Perri - A Thousand Years.lrc';
 [~,filename,~]=fileparts(file);

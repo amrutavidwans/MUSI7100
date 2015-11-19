@@ -14,7 +14,7 @@ tic
 
 % Read the Lrc files to get the ground truth
 
-oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 file='Christina Perri - A Thousand Years.lrc';
 [~,filename,~]=fileparts(file);
@@ -98,7 +98,7 @@ imagesc(sim_mat); axis xy; axis square;
 % [r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl);
 
 %display outputs
-display(fmeasure);display(acp);display(asp);
+% display(fmeasure);display(acp);display(asp);
 
 toc
 

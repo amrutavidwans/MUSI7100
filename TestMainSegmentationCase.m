@@ -13,7 +13,7 @@ tic
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 file='Christina Perri - A Thousand Years.lrc';
 [~,filename,~]=fileparts(file);
@@ -49,7 +49,7 @@ Nz_MP_vals=find(PitchMelodia(:,2)~=0);
 StartLyrics=PitchMelodia(Nz_MP_vals(1),1);
 EndLyrics=PitchMelodia(Nz_MP_vals(end),1);
 
-[PM_ds]=MelodiaDownSample(MelodiaFile);
+[PM_ds]=MelodiaDownSample(MelodiaFile,0.01);
 
 Nz_PM_ds=find(PM_ds(:,2)~=0);
 NzPitchMelodia(:,1)=PM_ds(Nz_PM_ds,1);

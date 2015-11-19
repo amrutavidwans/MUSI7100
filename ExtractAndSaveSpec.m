@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 
 fnames = dir([oldpath '*.wav']);

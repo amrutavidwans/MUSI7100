@@ -13,7 +13,7 @@ tic
 % ExtractAndSaveSpec
 
 % Read the Lrc files to get the ground truth
-oldpath=('C:\Users\amrut_000\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 file='Blank Space.lrc';
 [~,filename,~]=fileparts(file);
@@ -32,11 +32,11 @@ Idx=find(emptyCells==1);
 TotalLines=length(Lyrics);
 
 % MFCCs
-hop=0.05; % hop in s
-frm=0.2; % frm in s
+hop=0.5; % hop in s
+frm=5; % frm in s
 AudioFileName=[oldpath filename '.wav'];
 [AudioFile,fs]=audioread(AudioFileName);
-addpath('.\MFCC');
+addpath('./MFCC');
 coeff=melfcc(AudioFile,fs, 'maxfreq', 8000, 'numcep', 13, 'nbands', 40, 'fbtype', 'fcmel', 'dcttype', 1, 'usecmp', 1, 'wintime',frm, 'hoptime', hop, 'preemph', 0, 'dither', 1);
 
 % normalize the coeff
@@ -58,10 +58,15 @@ k = [0 1 2; -1 0 1; -2 -1 0];
 H = conv2(double(sim_mat_coeff),k, 'same');
 V = conv2(double(sim_mat_coeff),k','same');
 
+threshold=0.01;
 E = sqrt(H.*H + V.*V);
 edgeImage = uint8((E > threshold) * 255);
 
 figure; imagesc(TimeInter,TimeInter,edgeImage); colormap gray; axis xy;
+
+SE=strel('line',11,135);
+IM2 = imdilate(sim_mat_coeff,SE);
+figure; imshow(IM2);
 
 % subplot(2,1,2);
 % y1arr=ones(length(LyricsApproxTiming),1)*y1;
@@ -93,7 +98,7 @@ figure; imagesc(TimeInter,TimeInter,edgeImage); colormap gray; axis xy;
 % [r_e,acp,r_a,asp,K]=clust_purity(idx_lbl,gt_lbl);
 
 %display outputs
-display(fmeasure);display(acp);display(asp);
+% display(fmeasure);display(acp);display(asp);
 
 toc
 % using low level features:

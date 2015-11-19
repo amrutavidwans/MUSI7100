@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-oldpath=('E:\Users\Admin\Documents\MS GTCMT\Sem1\Research Project 7100\Audios_16kHz\');
+oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
 
 fnames = dir([oldpath '*.mat']);
