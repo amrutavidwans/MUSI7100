@@ -24,8 +24,8 @@ addpath(genpath('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/MAT
 
 oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 
-filename = [filename '.wav'];
-[f_audio,sideinfo] = wav_to_audio('',oldpath, filename);
+fname = [filename '.wav'];
+[f_audio,sideinfo] = wav_to_audio('',oldpath, fname);
 paramPitch.winLenSTMSP = 4410;
 % paramPitch.visualize = 1;      % visualise pitch based feature inbuit in SM toolbox
 [f_pitch] = audio_to_pitch_via_FB(f_audio,paramPitch);
@@ -50,22 +50,36 @@ paramSM.circShift = [0:11];
 [S,I,parameter_ftosm] = features_to_SM(f_CENS,f_CENS,paramSM);
 
 paramThres.threshTechnique = 1;
-paramThres.threshValue = 0.85;
+paramThres.threshValue = 0.9;
 paramThres.applyBinarize = 1;
-[S_thres,paramThres] = threshSM(S,paramThres);
+[S_thres,paramThres] = threshSM(S,paramThres); %(IdxStrt:IdxEnd,IdxStrt:IdxEnd)
 visualizeSM(S_thres,paramVis);
 
 TimeStamps= (0:(length(S_thres))-1)/paramVis.featureRate;
+
+%% use Melodia information to detect the singing voice start and end
+MelodiaFile=[oldpath filename '_vamp_mtg-melodia_melodia_melody.csv'];
+PitchMelodia=load(MelodiaFile);
+PitchMelodia(PitchMelodia(:,2)<0,2)=0;
+
+Nz_MP_vals=find(PitchMelodia(:,2)~=0);
+StartVoice=PitchMelodia(Nz_MP_vals(1),1);
+StartVoice=round(StartVoice);
+EndVoice=PitchMelodia(Nz_MP_vals(end),1);
+EndVoice=round(EndVoice);
+IdxStrt=find(TimeStamps==StartVoice);
+IdxEnd=find(TimeStamps==EndVoice);
+
 %% erode the SDM across diagonals
 se = strel('line', 10, -45);
-SDM_erode = imerode(S_thres,se);
+SDM_erode = imerode(S_thres,se); %(IdxStrt:IdxEnd,IdxStrt:IdxEnd) matrix considering IdxStrt and IdxEnd
 figure;imagesc(SDM_erode); axis xy;
 % hold on;
-MarkGTonSDM(SDM_erode,TimeStamps,Lyrics,TimeLyrics);
+MarkGTonSDM(SDM_erode,TimeStamps,Lyrics,TimeLyrics); %TimeStamps(IdxStrt:IdxEnd)
 hold off;
 %% find the boundaries of connected components
 [B,L] = bwboundaries(SDM_erode,'noholes');
-figure;imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+% figure;imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
 figure;imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
 hold on
 for k = 1:length(B)
@@ -296,7 +310,7 @@ end
 hold on
 plot(MatchedCCVec(:,1), MatchedCCVec(:,2), 'r*')
 
-se = strel('line', 20, 45);
+se = strel('line', 10, 45);
 BLyrics_resize = imdilate(BLyrics_resize,se);
 figure; imagesc(BLyrics_resize); axis xy;
 

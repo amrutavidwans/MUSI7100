@@ -24,8 +24,8 @@ addpath(genpath('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/MAT
 
 oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 
-filename = [filename '.wav'];
-[f_audio,sideinfo] = wav_to_audio('',oldpath, filename);
+fname = [filename '.wav'];
+[f_audio,sideinfo] = wav_to_audio('',oldpath, fname);
 paramPitch.winLenSTMSP = 4410;
 % paramPitch.visualize = 1;      % visualise pitch based feature inbuit in SM toolbox
 [f_pitch] = audio_to_pitch_via_FB(f_audio,paramPitch);
@@ -52,20 +52,21 @@ paramSM.circShift = [0:11];
 paramThres.threshTechnique = 1;
 paramThres.threshValue = 0.85;
 paramThres.applyBinarize = 1;
-[S_thres,paramThres] = threshSM(S,paramThres);
+[S_thres,paramThres] = threshSM(S,paramThres); %(IdxStrt:IdxEnd,IdxStrt:IdxEnd)
 visualizeSM(S_thres,paramVis);
 
 TimeStamps= (0:(length(S_thres))-1)/paramVis.featureRate;
+
 %% erode the SDM across diagonals
 se = strel('line', 10, -45);
-SDM_erode = imerode(S_thres,se);
+SDM_erode = imerode(S_thres,se); %(IdxStrt:IdxEnd,IdxStrt:IdxEnd) matrix considering IdxStrt and IdxEnd
 figure;imagesc(SDM_erode); axis xy;
 % hold on;
-MarkGTonSDM(SDM_erode,TimeStamps,Lyrics,TimeLyrics);
+MarkGTonSDM(SDM_erode,TimeStamps,Lyrics,TimeLyrics); %TimeStamps(IdxStrt:IdxEnd)
 hold off;
 %% find the boundaries of connected components
 [B,L] = bwboundaries(SDM_erode,'noholes');
-figure;imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+% figure;imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
 figure;imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
 hold on
 for k = 1:length(B)
@@ -296,9 +297,34 @@ end
 hold on
 plot(MatchedCCVec(:,1), MatchedCCVec(:,2), 'r*')
 
-se = strel('line', 20, 45);
+se = strel('line', 10, 45);
 BLyrics_resize = imdilate(BLyrics_resize,se);
 figure; imagesc(BLyrics_resize); axis xy;
 
  A=BLyrics_resize.*SDM_erode;
  figure;imagesc(A); axis xy;
+ 
+ %% surf features
+
+LyricsResize=double(BLyrics_resize);
+C=double(SDM_erode);
+D=zeros(length(SDM_erode),length(SDM_erode));
+
+points1=detectSURFFeatures(C);
+points2=detectSURFFeatures(LyricsResize);
+
+[f1,vpts1]=extractFeatures(C,points1);
+[f2,vpts2]=extractFeatures(LyricsResize,points2);
+
+indxPairs=matchFeatures(f1,f2,'Unique',false);
+matchPoints1=vpts1(indxPairs(:,1));
+matchPoints2=vpts2(indxPairs(:,2));
+
+figure; ax=axes;
+showMatchedFeatures(C,LyricsResize,matchPoints1,matchPoints2,'Parent',ax);
+legend(ax,'matchedPoints1','matchedPoints2');
+
+%% surf features within an area
+
+
+

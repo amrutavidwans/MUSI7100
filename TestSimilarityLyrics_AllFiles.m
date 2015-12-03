@@ -2,10 +2,19 @@ clear all;
 fclose all;
 close all;
 clc;
+figIndex=1;
+figType='-dpng'; %'-dpdf'
+
 
 oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 % path='.\Audios_16kHz\';
-file='Christina Perri - A Thousand Years.lrc';%'Alice Cooper - I''m Eighteen.lrc';
+file='Christina Perri - A Thousand Years.lrc';
+matfiles = dir(fullfile(oldpath, '*.lrc'));
+for index=5:5%3:length(matfiles)
+close all; % Close all the open figure windows     
+
+file=matfiles(index).name;
+%file='Christina Perri - A Thousand Years.lrc';
 [~,filename,~]=fileparts(file);
 [Time_final,OffsetSec,Lyrics]= ReadLrc(oldpath,file);
 
@@ -15,16 +24,25 @@ TimeLyrics=Time_final+(ones(1,length(Time_final))*OffsetSec);
 % Idx=find(emptyCells==1);
 
 %% similarity of Lyrics
-SimMatLyrics = LyricsSimilarity(Lyrics);
-figure; imagesc(SimMatLyrics); axis xy;
+SimMatLyrics=zeros(length(TimeLyrics),length(TimeLyrics));
 
+for i=1:length(Lyrics)
+%     if isempty(Lyrics{i})~=1    
+        for j=1:length(Lyrics)
+            SimMatLyrics(i,j) = strcmp(Lyrics{i},Lyrics{j});
+        end
+%     end
+end
+figure(figIndex); imagesc(SimMatLyrics); axis xy;
+figIndex=figIndex+1;
 
 %% similarity using SMtoolbox
-addpath(genpath('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/MATLAB_SM-Toolbox_1.0/'));
+addpath(genpath('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/MATLAB_SM-Toolbox_1.0'));
 
 oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 
-filename = [filename '.wav'];
+filename = strcat(filename,'.wav');%[filename '.wav'];
+% [f_audio,sideinfo] = wav_to_audio('', 'data_music/', filename);
 [f_audio,sideinfo] = wav_to_audio('',oldpath, filename);
 paramPitch.winLenSTMSP = 4410;
 % paramPitch.visualize = 1;      % visualise pitch based feature inbuit in SM toolbox
@@ -38,7 +56,7 @@ paramCENS.downsampSmooth = 5;
 S = features_to_SM(f_CENS,f_CENS);
 paramVis.colormapPreset = 2;
 paramVis.featureRate=2;
-visualizeSM(S,paramVis);
+% visualizeSM(S,paramVis);
 
 paramVis.colormapPreset = 2;
 paramSM.smoothLenSM = 20;
@@ -50,23 +68,26 @@ paramSM.circShift = [0:11];
 [S,I,parameter_ftosm] = features_to_SM(f_CENS,f_CENS,paramSM);
 
 paramThres.threshTechnique = 1;
-paramThres.threshValue = 0.85;
+paramThres.threshValue = 0.75;
 paramThres.applyBinarize = 1;
 [S_thres,paramThres] = threshSM(S,paramThres);
-visualizeSM(S_thres,paramVis);
+% visualizeSM(S_thres,paramVis);
 
 TimeStamps= (0:(length(S_thres))-1)/paramVis.featureRate;
 %% erode the SDM across diagonals
 se = strel('line', 10, -45);
 SDM_erode = imerode(S_thres,se);
-figure;imagesc(SDM_erode); axis xy;
+figure(figIndex);imagesc(SDM_erode); axis xy;
+figIndex=figIndex+1;
 % hold on;
 MarkGTonSDM(SDM_erode,TimeStamps,Lyrics,TimeLyrics);
 hold off;
 %% find the boundaries of connected components
 [B,L] = bwboundaries(SDM_erode,'noholes');
-figure;imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
-figure;imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figure(figIndex);imagesc(TimeStamps,TimeStamps,label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figIndex=figIndex+1;
+figure(figIndex);imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figIndex=figIndex+1;
 hold on
 for k = 1:length(B)
 boundary = B{k};
@@ -81,7 +102,7 @@ end
 maxchkB=max(chk_p);
 clear chk_p;
 
-hardThreshBnd=round(0.05*maxchkB);
+hardThreshBnd=round(0.10*maxchkB);
 NewBnds={};
 for i=1:length(B)
    if length(B{i})>hardThreshBnd && length(B{i})<maxchkB && B{i}(2,1)<B{i}(2,2)
@@ -92,7 +113,8 @@ end
 NewBnds=NewBnds';
 
 %% plot new vals
-figure;imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figure(figIndex);imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figIndex=figIndex+1;
 hold on
 for k = 1:length(NewBnds)
 boundary = NewBnds{k};
@@ -173,20 +195,20 @@ end
 %% keep only diagonals in the lyrics similarity
 se = strel('line', 5, -45);
 SDM_edLyrics = imerode(SimMatLyrics,se);
-figure; imagesc(SDM_edLyrics); axis xy;
-
+figure(figIndex); imagesc(SDM_edLyrics); axis xy;
+figIndex=figIndex+1;
 %% resize the Lyrics SDM to the size of feature SDM
 [rw,cl]=size(SDM_erode);
 BLyrics_resize = imresize(SDM_edLyrics,[rw cl]);
-% figure; imagesc(BLyrics_resize); axis xy;
-
+% figure(figIndex); imagesc(BLyrics_resize); axis xy;
+%figIndex=figIndex+1;
 % convert to black and white
 level = graythresh(BLyrics_resize);
 BLyrics_resize=im2bw(BLyrics_resize,level);
 se = strel('line', 10, -45);
 BLyrics_resize = imerode(BLyrics_resize,se);
-figure; imagesc(BLyrics_resize); axis xy;
-
+figure(figIndex); imagesc(BLyrics_resize); axis xy;
+figIndex=figIndex+1;
 % boundaries of the diagonals in Lyrics similarity matrix
 [BLyrics,Lchk] = bwboundaries(BLyrics_resize,'noholes');
 
@@ -208,7 +230,8 @@ for i=1:length(BLyrics)
 end
 NewBndsLyrics=NewBndsLyrics';
 
-figure;imagesc(label2rgb(Lchk, @jet, [.5 .5 .5]));  axis xy;
+figure(figIndex);imagesc(label2rgb(Lchk, @jet, [.5 .5 .5]));  axis xy;
+figIndex=figIndex+1;
 hold on
 for k = 1:length(NewBndsLyrics)
 boundary = NewBndsLyrics{k};
@@ -218,11 +241,12 @@ end
 %% experiment with direct multiplication of feature SDM and Lyrics SDM
 
 % A=BLyrics_resize.*SDM_erode;
-% figure;imagesc(A); axis xy;
-% 
+% figure(figIndex);imagesc(A); axis xy;
+% figIndex=figIndex+1;
 % [Achk,ALchk] = bwboundaries(A,'noholes');
-% figure;imagesc(label2rgb(ALchk, @jet, [.5 .5 .5])); axis xy;
-% hold on
+% figure(figIndex);imagesc(label2rgb(ALchk, @jet, [.5 .5 .5])); axis xy;
+% figIndex=figIndex+1; 
+%hold on
 % for k = 1:length(Achk)
 % boundary = Achk{k};
 % plot(boundary(:,1), boundary(:,2), 'w', 'LineWidth', 2)
@@ -230,7 +254,7 @@ end
 
 %% find out the centroids of the connected components in both Lyrics SDM and feature SDM
 
-CCLyrics=zeros(length(NewBndsLyrics),2);
+CCLyrics=zeros(length(NewBndsLyrics),1);
 for i=1:length(NewBndsLyrics)
     CCLyrics(i,1)=mean(NewBndsLyrics{i}(:,1));
     CCLyrics(i,2)=mean(NewBndsLyrics{i}(:,2));
@@ -238,7 +262,7 @@ end
 % hold on
 % plot(CCLyrics(:,1), CCLyrics(:,2), 'b*')
 
-CCfeat=zeros(length(NewBnds),2);
+CCfeat=zeros(length(NewBnds),1);
 for i=1:length(NewBnds)
     CCfeat(i,1)=mean(NewBnds{i}(:,1));
     CCfeat(i,2)=mean(NewBnds{i}(:,2));
@@ -265,14 +289,14 @@ CCfeatVecNew(:,1)=sqrt(CCfeatVec(:,2).^2+CCfeatVec(:,1).^2);
 CCfeatVecNew(:,2)=atan2(CCfeatVec(:,2),CCfeatVec(:,1));
 
 % min cross is match
-VecAngleDiff=zeros((size(CCLyricsVec,1)),(size(CCfeatVec,1)));
-for i=1:(size(CCLyricsVec,1))
-    for j=1:(size(CCfeatVec,1))
+VecAngleDiff=zeros(length(CCLyricsVec),length(CCfeatVec));
+for i=1:length(CCLyricsVec)
+    for j=1:length(CCfeatVec)
         VecAngleDiff(i,j)=1*(abs(CCLyricsVecNew(i,2)-CCfeatVecNew(j,2)))+0*(abs(CCLyricsVecNew(i,1)-CCfeatVecNew(j,1)));
     end
 end
 
-for i=1:(size(CCLyricsVec,1))
+for i=1:length(CCLyricsVec)
     [~,VecMatchLoc(i)]=min(VecAngleDiff(i,:));
 end
 
@@ -281,14 +305,16 @@ MatchedCCVec=zeros(length(VecMatchLoc),2);
 MatchedVec={};%zeros(length(VecMatchLoc),2);
 MatchedNewBndsStrt=zeros(length(VecMatchLoc),2);
 
-for i=1:(length(VecMatchLoc))
+for i=1:length(VecMatchLoc)
     MatchedCCVec(i,:)=CCfeat(VecMatchLoc(i),:);
     MatchedVec{i}=NewBnds{VecMatchLoc(i)};
     MatchedNewBndsStrt(i,:)=NewBndsOneSide(VecMatchLoc(i),:);
 end
 
-figure;imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figure(figIndex);imagesc(label2rgb(L, @jet, [.5 .5 .5]));  axis xy;
+figIndex=figIndex+1;
 hold on
+
 for k = 1:length(B)
 boundary = B{k};
 plot(boundary(:,1), boundary(:,2), 'w', 'LineWidth', 2)
@@ -298,7 +324,26 @@ plot(MatchedCCVec(:,1), MatchedCCVec(:,2), 'r*')
 
 se = strel('line', 20, 45);
 BLyrics_resize = imdilate(BLyrics_resize,se);
-figure; imagesc(BLyrics_resize); axis xy;
+figure(figIndex); imagesc(BLyrics_resize); axis xy;
+figIndex=figIndex+1;
 
  A=BLyrics_resize.*SDM_erode;
- figure;imagesc(A); axis xy;
+ figure(figIndex);imagesc(A); axis xy;
+ figIndex=figIndex+1;
+ 
+ %%% Print/Save all the images in song specific folder
+Folder=pwd;
+[PathStr,FolderName]=fileparts(Folder);
+DataFolder=[file(1:length(file)-4)];
+mkdir(DataFolder)
+cd (DataFolder);
+ for i=1:figIndex
+
+str = int2str(i);
+figure=strcat('figure',str);
+f=strcat('-f',str);
+print(f,figure,figType);
+
+ end
+ cd (Folder);
+ end

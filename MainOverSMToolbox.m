@@ -1,5 +1,5 @@
-% fclose all;
-% close all;
+fclose all;
+close all;
 clear all;
 clc;
 
@@ -7,7 +7,7 @@ addpath(genpath('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/MAT
 
 oldpath=('/Users/Amruta/Documents/MS GTCMT/Sem1/Research Project 7100/Audios_16kHz/');
 
-filename = 'Christina Perri - A Thousand Years.wav';
+filename = 'Blank Space.wav';
 % [f_audio,sideinfo] = wav_to_audio('', 'data_music/', filename);
 [f_audio,sideinfo] = wav_to_audio('',oldpath, filename);
 paramPitch.winLenSTMSP = 4410;
